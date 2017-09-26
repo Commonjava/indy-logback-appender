@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.commonjava.indy.addons.logback.appender;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -25,6 +40,7 @@ public class indyLogbackAppender extends UnsynchronizedAppenderBase<ILoggingEven
      * Address to which is a server instance bound.
      * */
     private String jbossBindAddress;
+
 
     private Settings settings;
 
@@ -54,9 +70,31 @@ public class indyLogbackAppender extends UnsynchronizedAppenderBase<ILoggingEven
      * */
     private String indexType;
 
+    public String getJbossServerName()
+    {
+        return jbossServerName;
+    }
+
+    public void setJbossServerName( String jbossServerName )
+    {
+        this.jbossServerName = jbossServerName;
+    }
+
+    public String getJbossBindAddress()
+    {
+        return jbossBindAddress;
+    }
+
+    public void setJbossBindAddress( String jbossBindAddress )
+    {
+        this.jbossBindAddress = jbossBindAddress;
+    }
+
     /**
      * Client which communicates with elascticsearch cluster.
      * */
+
+
     private volatile TransportClient client;
 
     public Settings getSettings()
@@ -129,53 +167,8 @@ public class indyLogbackAppender extends UnsynchronizedAppenderBase<ILoggingEven
         this.client = client;
     }
 
-    protected void append( ILoggingEvent eventObject )
-    {
-        try
-        {
-            initClient();
-            try
-            {
-                this.client.prepareIndex( this.index, this.indexType ).setSource( serializeToJson( eventObject ) ).execute();
-            }
-            catch ( final IOException e )
-            {
-                e.printStackTrace();
-            }
-        }catch ( Exception e )
-        {
-
-        }
-    }
-    /**
-     * Serializes log record to JSON format using {@link XContentBuilder}.
-     * @param eventObject eventObject to be serialized
-     * @return serialized log record
-     * */
-    private XContentBuilder serializeToJson(ILoggingEvent eventObject ) throws IOException
-    {
-        final XContentBuilder builder = XContentFactory.jsonBuilder()
-                                                       .startObject()
-                                                       .field("timestamp", new Date( eventObject.getTimeStamp()))
-                                                       .field("bind.address", "")
-                                                       .field("server.name", "")
-                                                       .field("level", eventObject.getLevel().toString())
-                                                       .field("loggerName", eventObject.getLoggerName())
-                                                       .field("message", eventObject.getMessage());
-
-        final String name = eventObject.getThrowableProxy() == null ? "null" : eventObject.getThrowableProxy().getClass().getName();
-        final String message = eventObject.getThrowableProxy() == null ? "null" : eventObject.getThrowableProxy().getMessage();
-
-        builder.startObject("thrown")
-               .field("name", name)
-               .field("message", message)
-               .endObject();
-        builder.endObject();
-
-        return builder;
-    }
-
-    private void initClient() throws UnknownHostException
+    @Override
+    public void start()
     {
         if ( this.client == null )
         {
@@ -212,12 +205,60 @@ public class indyLogbackAppender extends UnsynchronizedAppenderBase<ILoggingEven
                                             .put( "name", "Wildfly Log Node" )
                                             .build();
 
-                    this.client = new PreBuiltTransportClient( settings ).addTransportAddress(
-                                    new InetSocketTransportAddress( InetAddress.getByName( this.transportAddress ),
-                                                                    this.port ) );
+                    try
+                    {
+                        this.client = new PreBuiltTransportClient( settings ).addTransportAddress( new InetSocketTransportAddress( InetAddress.getByName( this.transportAddress ),
+                                                                                                                                   this.port ) );
+                    }catch ( Exception e )
+                    {
+                        throw  new RuntimeException( e );
+                    }
                 }
             }
+            super.start();
 
         }
     }
+
+    protected void append( ILoggingEvent eventObject )
+    {
+        try
+        {
+            this.client.prepareIndex( this.index, this.indexType )
+                       .setSource( serializeToJson( eventObject ) )
+                       .execute();
+        }
+        catch ( final IOException e )
+        {
+            e.printStackTrace();
+        }
+    }
+    /**
+     * Serializes log record to JSON format using {@link XContentBuilder}.
+     * @param eventObject eventObject to be serialized
+     * @return serialized log record
+     * */
+    private XContentBuilder serializeToJson(ILoggingEvent eventObject ) throws IOException
+    {
+        final XContentBuilder builder = XContentFactory.jsonBuilder()
+                                                       .startObject()
+                                                       .field("timestamp", new Date( eventObject.getTimeStamp()))
+                                                       .field("bind.address", "")
+                                                       .field("server.name", "")
+                                                       .field("level", eventObject.getLevel().toString())
+                                                       .field("loggerName", eventObject.getLoggerName())
+                                                       .field("message", eventObject.getMessage());
+
+        final String name = eventObject.getThrowableProxy() == null ? "null" : eventObject.getThrowableProxy().getClass().getName();
+        final String message = eventObject.getThrowableProxy() == null ? "null" : eventObject.getThrowableProxy().getMessage();
+
+        builder.startObject("thrown")
+               .field("name", name)
+               .field("message", message)
+               .endObject();
+        builder.endObject();
+
+        return builder;
+    }
+
 }
