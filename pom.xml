@@ -11,9 +11,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.commonjava.indy</groupId>
@@ -26,6 +24,15 @@
         <jackson.version>2.7.3</jackson.version>
         <randomized.testrunner.version>2.3.3</randomized.testrunner.version>-->
     </properties>
+  <name>indy-logback-appender</name>
+  <url>https://github.com/bxf12315/indy-logback-appender</url>
+
+  <scm>
+    <developerConnection>scm:git:git@github.com:bxf12315/indy-logback-appender.git</developerConnection>
+    <connection>scm:git:https://github.com/bxf12315/indy-logback-appender</connection>
+    <url>https://github.com/bxf12315/indy-logback-appender</url>
+    <tag>org.commonjava.indy-1.0</tag>
+  </scm>
 
     <dependencies>
         <dependency>
@@ -61,4 +68,16 @@
         </dependency>
 
     </dependencies>
+  <distributionManagement>
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <name>Release Repository</name>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 </project>
