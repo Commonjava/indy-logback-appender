@@ -19,7 +19,7 @@
     <version>1.4-SNAPSHOT</version>
 
     <properties>
-      <!--  <lucene.version>6.6.0</lucene.version>
+      <!-- test  <lucene.version>6.6.0</lucene.version>
         <elasticsearch.version>2.3.1</elasticsearch.version>
         <jackson.version>2.7.3</jackson.version>
         <randomized.testrunner.version>2.3.3</randomized.testrunner.version>-->
